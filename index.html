@@ -14,8 +14,9 @@
         const SHOW_ANSWER_DELAY = 500;
         const SHOW_CORRECT_DELAY = 1500;
         
-        let num1, num2, correct;
+        let correct;
         let recognition;
+        let ignore = false;
 
         function randomInt(lower, upper) {
             const range = upper - lower + 1;
@@ -46,6 +47,10 @@
                 case 'n':
                     reset();
                     break;
+                case ' ':
+                    console.log('ignore');
+                    ignore = true;
+                    break;
             }
         }
 
@@ -62,8 +67,8 @@
         }
 
         function reset() {
-            num1 = randomInt(LOWER, UPPER);
-            num2 = randomInt(LOWER, UPPER);
+            const num1 = randomInt(LOWER, UPPER);
+            const num2 = randomInt(LOWER, UPPER);
             correct = (num1 * num2).toString();
 
             const question = document.getElementById('question');
@@ -79,7 +84,7 @@
             answer.style.display = 'block';
 
             let clearAnswer;
-            if (isIntegerString(value)) {
+            if (!ignore && isIntegerString(value)) {
                 if (value === correct) {
                     answer.style.color = 'green';
                     clearAnswer = reset;
@@ -92,6 +97,7 @@
                     };
                 }
             } else {
+                ignore = false;
                 answer.style.color = 'lightgray';
                 clearAnswer = () => {
                     answer.style.display = 'none';
