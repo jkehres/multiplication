@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiplication</title>
+    <style>
+        body {
+            font-size: xx-large;
+            font-family: sans-serif;
+        }
+    </style>
+    <script>
+        const LOWER = 4;
+        const UPPER = 12;
+        const SHOW_ANSWER_DELAY = 500;
+        const SHOW_CORRECT_DELAY = 1500;
+        
+        let num1, num2, correct;
+        let recognition;
+
+        function randomInt(lower, upper) {
+            const range = upper - lower + 1;
+            return Math.floor(Math.random() * range) + lower;
+        }
+
+        function isIntegerString(value) {
+            return Number.parseInt(value, 10).toString() === value;
+        }
+
+        function init() {
+            document.body.onkeyup = keyHandler;
+            reset();
+
+            if (window.webkitSpeechRecognition) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.onresult = wordHandler;
+                recognition.start();
+            } else {
+                alert('Browser does not support speech API');
+            }            
+        }
+
+        function keyHandler(event) {
+            switch (event.key) {
+                case 'n':
+                    reset();
+                    break;
+            }
+        }
+
+        function wordHandler(event) {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const result = event.results[i];
+                if (result.isFinal) {
+                    for (const r of result) {
+                        console.log(`i=${i}, c=${r.confidence}, t='${r.transcript.trim()}'`);
+                    }
+                    showAnswer(result[0].transcript.trim());
+                }
+            }
+        }
+
+        function reset() {
+            num1 = randomInt(LOWER, UPPER);
+            num2 = randomInt(LOWER, UPPER);
+            correct = (num1 * num2).toString();
+
+            const question = document.getElementById('question');
+            const answer = document.getElementById('answer');
+
+            question.innerHTML = `${num1} x ${num2}`;
+            answer.style.display = 'none';
+        }
+
+        function showAnswer(value) {
+            const answer = document.getElementById('answer');
+            answer.innerHTML = value;
+            answer.style.display = 'block';
+
+            let clearAnswer;
+            if (isIntegerString(value)) {
+                if (value === correct) {
+                    answer.style.color = 'green';
+                    clearAnswer = reset;
+                } else {
+                    answer.style.color = 'red';
+                    clearAnswer = () => {
+                        answer.innerHTML = correct;
+                        answer.style.color = 'black';
+                        setTimeout(reset, SHOW_CORRECT_DELAY);
+                    };
+                }
+            } else {
+                answer.style.color = 'lightgray';
+                clearAnswer = () => {
+                    answer.style.display = 'none';
+                };
+            }
+
+            setTimeout(clearAnswer, SHOW_ANSWER_DELAY);
+        }
+    </script>
+</head>
+<body onload="init()">
+    <div id="question"></div>
+    <div id="answer"></div>
+</body>
+</html>
