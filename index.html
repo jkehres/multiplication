@@ -4,7 +4,7 @@
     <title>Multiplication</title>
     <style>
         body {
-            font-size: xx-large;
+            font-size: 8vw;
             font-family: sans-serif;
         }
     </style>
@@ -16,6 +16,7 @@
         
         let correct;
         let recognition;
+        let allowed = true;
         let ignore = false;
 
         function randomInt(lower, upper) {
@@ -35,11 +36,21 @@
                 recognition = new webkitSpeechRecognition();
                 recognition.continuous = true;
                 recognition.interimResults = false;
-                recognition.onresult = wordHandler;
-                recognition.start();
+
+                recognition.onresult = resultHandler;
+                recognition.onnomatch = () => showAnswer('???');
+                recognition.onerror = errorHandler;
+                recognition.onend = endHandler;
+
+                start()
             } else {
                 alert('Browser does not support speech API');
             }            
+        }
+
+        function start() {
+            console.log('start');
+            recognition.start();
         }
 
         function keyHandler(event) {
@@ -54,14 +65,38 @@
             }
         }
 
-        function wordHandler(event) {
+        function errorHandler(event) {
+            console.log(event);
+            allowed = event.error !== 'not-allowed' && event.error !== 'service-not-allowed';
+        }
+
+        function endHandler() {
+            console.log('end');
+            if (allowed) {
+                start();
+            }
+        }
+
+        function resultHandler(event) {
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const result = event.results[i];
                 if (result.isFinal) {
                     for (const r of result) {
                         console.log(`i=${i}, c=${r.confidence}, t='${r.transcript.trim()}'`);
                     }
-                    showAnswer(result[0].transcript.trim());
+
+                    let value = result[0].transcript.trim();
+                    if (value === 'sex') {
+                        value = '6';
+                    }
+                    if (value === 'hero' || value === 'Euro' || value === 'gyro') {
+                        value = '0';
+                    }
+                    if (value === 'or') {
+                        value = '4';
+                    }
+
+                    showAnswer(value);
                 }
             }
         }
