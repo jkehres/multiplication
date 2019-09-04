@@ -9,8 +9,8 @@
         }
     </style>
     <script>
-        const LOWER = 4;
-        const UPPER = 12;
+        const LOWER = 0;
+        const UPPER = 7;
         const SHOW_ANSWER_DELAY = 500;
         const SHOW_CORRECT_DELAY = 1500;
         
@@ -24,7 +24,7 @@
         }
 
         function isIntegerString(value) {
-            return Number.parseInt(value, 10).toString() === value;
+            return value && Number.parseInt(value, 10).toString() === value;
         }
 
         function init() {
@@ -45,7 +45,7 @@
         function keyHandler(event) {
             switch (event.key) {
                 case 'n':
-                    reset();
+                    showCorrect();
                     break;
                 case ' ':
                     console.log('ignore');
@@ -78,6 +78,14 @@
             answer.style.display = 'none';
         }
 
+        function showCorrect() {
+            const answer = document.getElementById('answer');
+            answer.innerHTML = correct;
+            answer.style.display = 'block';
+            answer.style.color = 'black';
+            setTimeout(reset, SHOW_CORRECT_DELAY);
+        }
+
         function showAnswer(value) {
             const answer = document.getElementById('answer');
             answer.innerHTML = value;
@@ -90,21 +98,20 @@
                     clearAnswer = reset;
                 } else {
                     answer.style.color = 'red';
-                    clearAnswer = () => {
-                        answer.innerHTML = correct;
-                        answer.style.color = 'black';
-                        setTimeout(reset, SHOW_CORRECT_DELAY);
-                    };
+                    clearAnswer = showCorrect;
                 }
             } else {
                 ignore = false;
-                answer.style.color = 'lightgray';
-                clearAnswer = () => {
-                    answer.style.display = 'none';
-                };
+                answer.style.color = value ? 'lightgray' : 'black';
+                clearAnswer = hideAnswer;
             }
 
             setTimeout(clearAnswer, SHOW_ANSWER_DELAY);
+        }
+
+        function hideAnswer() {
+            const answer = document.getElementById('answer');
+            answer.style.display = 'none';
         }
     </script>
 </head>
