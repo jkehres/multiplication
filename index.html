@@ -13,12 +13,12 @@
         const UPPER = 7;
         const SHOW_ANSWER_DELAY = 500;
         const SHOW_CORRECT_DELAY = 1500;
-        const RUN_LOCAL = false;
+        const USING_HTTPS = location.protocol === 'https:';
         
         let correct;
         let recognition;
         let show = 'none';
-        let listening = false;
+        let listen = 'end';
         let allowed = true;
         let ignore = false;
 
@@ -50,31 +50,18 @@
         }
 
         function start() {
-            if (allowed) {
+            if (listen !== 'start' && allowed) {
                 console.log('start');
-                listening = true;
+                listen = 'start';
                 recognition.start();
             }
         }
 
         function stop() {
-            console.log('stop');
-            recognition.stop();
-        }
-
-        function keyHandler(event) {
-            switch (event.key) {
-                case 'n':
-                    if (show === 'none') {
-                        showCorrect();
-                    }
-                    break;
-                case ' ':
-                    if (show === 'none') {
-                        console.log('ignore');
-                        ignore = true;
-                    }
-                    break;
+            if (listen === 'start') {
+                console.log('stop');
+                listen = 'stop';
+                recognition.stop();
             }
         }
 
@@ -85,8 +72,9 @@
 
         function endHandler() {
             console.log('end');
-            listening = false;
-            if (RUN_LOCAL) {
+            const expected = listen === 'stop';
+            listen = 'end;'
+            if (!expected) {
                 start();
             }
         }
@@ -115,11 +103,23 @@
             }
         }
 
-        function reset() {
-            if (!listening) {
-                start();
+        function keyHandler(event) {
+            switch (event.key) {
+                case 'n':
+                    if (show === 'none') {
+                        showCorrect();
+                    }
+                    break;
+                case ' ':
+                    if (show === 'none') {
+                        console.log('ignore');
+                        ignore = true;
+                    }
+                    break;
             }
+        }
 
+        function reset() {
             const num1 = randomInt(LOWER, UPPER);
             const num2 = randomInt(LOWER, UPPER);
             correct = (num1 * num2).toString();
@@ -130,10 +130,12 @@
             question.innerHTML = `${num1} x ${num2}`;
             answer.style.display = 'none';
             show = 'none';
+
+            start();
         }
 
         function showCorrect() {
-            if (!RUN_LOCAL && listening) {
+            if (USING_HTTPS) {
                 stop();
             }
 
@@ -151,7 +153,7 @@
                 return;
             }
 
-            if (!RUN_LOCAL && listening) {
+            if (USING_HTTPS) {
                 stop();
             }
 
