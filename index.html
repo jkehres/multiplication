@@ -13,9 +13,12 @@
         const UPPER = 7;
         const SHOW_ANSWER_DELAY = 500;
         const SHOW_CORRECT_DELAY = 1500;
+        const RUN_LOCAL = false;
         
         let correct;
         let recognition;
+        let show = 'none';
+        let listening = false;
         let allowed = true;
         let ignore = false;
 
@@ -29,9 +32,6 @@
         }
 
         function init() {
-            document.body.onkeyup = keyHandler;
-            reset();
-
             if (window.webkitSpeechRecognition) {
                 recognition = new webkitSpeechRecognition();
                 recognition.continuous = true;
@@ -42,25 +42,38 @@
                 recognition.onerror = errorHandler;
                 recognition.onend = endHandler;
 
-                start()
+                document.body.onkeyup = keyHandler;
+                reset();
             } else {
                 alert('Browser does not support speech API');
-            }            
+            }
         }
 
         function start() {
-            console.log('start');
-            recognition.start();
+            if (allowed) {
+                console.log('start');
+                listening = true;
+                recognition.start();
+            }
+        }
+
+        function stop() {
+            console.log('stop');
+            recognition.stop();
         }
 
         function keyHandler(event) {
             switch (event.key) {
                 case 'n':
-                    showCorrect();
+                    if (show === 'none') {
+                        showCorrect();
+                    }
                     break;
                 case ' ':
-                    console.log('ignore');
-                    ignore = true;
+                    if (show === 'none') {
+                        console.log('ignore');
+                        ignore = true;
+                    }
                     break;
             }
         }
@@ -72,7 +85,8 @@
 
         function endHandler() {
             console.log('end');
-            if (allowed) {
+            listening = false;
+            if (RUN_LOCAL) {
                 start();
             }
         }
@@ -102,6 +116,10 @@
         }
 
         function reset() {
+            if (!listening) {
+                start();
+            }
+
             const num1 = randomInt(LOWER, UPPER);
             const num2 = randomInt(LOWER, UPPER);
             correct = (num1 * num2).toString();
@@ -111,20 +129,36 @@
 
             question.innerHTML = `${num1} x ${num2}`;
             answer.style.display = 'none';
+            show = 'none';
         }
 
         function showCorrect() {
+            if (!RUN_LOCAL && listening) {
+                stop();
+            }
+
             const answer = document.getElementById('answer');
             answer.innerHTML = correct;
             answer.style.display = 'block';
             answer.style.color = 'black';
+            show = 'correct';
+
             setTimeout(reset, SHOW_CORRECT_DELAY);
         }
 
         function showAnswer(value) {
+            if (show !== 'none') {
+                return;
+            }
+
+            if (!RUN_LOCAL && listening) {
+                stop();
+            }
+
             const answer = document.getElementById('answer');
             answer.innerHTML = value;
             answer.style.display = 'block';
+            show = 'answer';
 
             let clearAnswer;
             if (!ignore && isIntegerString(value)) {
@@ -147,6 +181,7 @@
         function hideAnswer() {
             const answer = document.getElementById('answer');
             answer.style.display = 'none';
+            show = 'none';
         }
     </script>
 </head>
