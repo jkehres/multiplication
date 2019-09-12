@@ -4,13 +4,26 @@
     <title>Multiplication</title>
     <style>
         body {
-            font-size: 8vw;
             font-family: sans-serif;
+            font-size: 18px;
+        }
+
+        input {
+            width: 2em;
+            font-size: 18px;
+        }
+
+        #go {
+            margin-top: 0.5em;
+            font-size: 18px;
+        }
+
+        #question-container {
+            font-size: 8vw;
+            display: none;
         }
     </style>
     <script>
-        const LOWER = 0;
-        const UPPER = 7;
         const SHOW_ANSWER_DELAY = 500;
         const SHOW_CORRECT_DELAY = 1500;
         const USING_HTTPS = location.protocol === 'https:';
@@ -43,7 +56,6 @@
                 recognition.onend = endHandler;
 
                 document.body.onkeyup = keyHandler;
-                reset();
             } else {
                 alert('Browser does not support speech API');
             }
@@ -120,8 +132,18 @@
         }
 
         function reset() {
-            const num1 = randomInt(LOWER, UPPER);
-            const num2 = randomInt(LOWER, UPPER);
+            const configContainer = document.getElementById('config-container');
+            const questionContainer = document.getElementById('question-container');
+            configContainer.style.display = 'none';
+            questionContainer.style.display = 'block';
+
+            const lower = document.getElementById('lower');
+            const upper = document.getElementById('upper');
+            const numLower = Number.parseInt(lower.value, 10);
+            const numUpper = Number.parseInt(upper.value, 10);
+
+            const num1 = randomInt(numLower, numUpper);
+            const num2 = randomInt(numLower, numUpper);
             correct = (num1 * num2).toString();
 
             const question = document.getElementById('question');
@@ -188,7 +210,20 @@
     </script>
 </head>
 <body onload="init()">
-    <div id="question"></div>
-    <div id="answer"></div>
+    <div id="config-container">
+        <div>
+            <span>Show multiplication problems between </span>
+            <input id="lower" type="number" value="1"/>
+            <span> and </span>
+            <input id="upper" type="number" value="12"/>
+        </div>
+        <div>
+            <input type="button" value="Go" id="go" onclick="reset()"/>
+        </div>
+    </div>
+    <div id="question-container">
+        <div id="question"></div>
+        <div id="answer"></div>
+    </div>
 </body>
 </html>
